@@ -1,0 +1,8 @@
+@import "tailwindcss";
+.leaflet-bottom.leaflet-right {
+  display: none;
+}
+header nav {
+  -webkit-backdrop-filter: blur(20px);
+  backdrop-filter: blur(20px);
+}
