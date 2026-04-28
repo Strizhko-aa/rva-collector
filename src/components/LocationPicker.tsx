@@ -1,56 +1,73 @@
-import { MapContainer, TileLayer, Marker, useMapEvents, useMap } from 'react-leaflet';
-import L from 'leaflet';
 import { useEffect } from 'react';
+import { MapContainer, Marker, useMapEvents, useMap } from 'react-leaflet';
+import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
+import 'leaflet-plugins/layer/tile/Yandex.js';
 
-// Фикс иконок
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
+
 const DefaultIcon = L.icon({
-    iconUrl: markerIcon,
-    shadowUrl: markerShadow,
-    iconSize: [25, 41],
-    iconAnchor: [12, 41]
+  iconUrl: markerIcon,
+  shadowUrl: markerShadow,
+  iconSize: [25, 41],
+  iconAnchor: [12, 41]
 });
 
-interface Props {
-  location: { lat: number; lng: number };
-  onChange: (pos: { lat: number; lng: number }) => void;
-}
-
-// Компонент для обновления центра карты при изменении location извне (EXIF)
-const RecenterMap = ({ location }: { location: { lat: number; lng: number } }) => {
+// Компонент для автоматического перемещения карты к маркеру
+const ChangeView = ({ center }: { center: [number, number] }) => {
   const map = useMap();
   useEffect(() => {
-    map.setView([location.lat, location.lng], map.getZoom());
-  }, [location, map]);
+    // Используем setView или flyTo, чтобы карта плавно или мгновенно сдвинулась к новым координатам
+    map.setView(center, map.getZoom());
+  }, [center, map]);
   return null;
 };
 
-const LocationMarker = ({ location, onChange }: Props) => {
-  useMapEvents({
-    click(e) {
-      onChange(e.latlng);
-    },
-  });
-  return <Marker position={location} icon={DefaultIcon} />;
+const YandexMapLayer = () => {
+  const map = useMap();
+  useEffect(() => {
+    const layer = new L.Yandex('map', {
+      maxZoom: 18,
+      attribution: '&copy; Яндекс'
+    });
+    layer.addTo(map);
+    return () => {
+      if (map.hasLayer(layer)) map.removeLayer(layer);
+    };
+  }, [map]);
+  return null;
 };
 
-const LocationPicker = ({ location, onChange }: Props) => {
+const MapEventsHandler = ({ onClick }: { onClick: (latlng: L.LatLng) => void }) => {
+  useMapEvents({
+    click(e) { onClick(e.latlng); },
+  });
+  return null;
+};
+
+interface LocationPickerProps {
+  location: { lat: number; lng: number };
+  onChange: (location: { lat: number; lng: number }) => void;
+}
+
+const LocationPicker = ({ location, onChange }: LocationPickerProps) => {
+  const centerPos: [number, number] = [location.lat, location.lng];
+
   return (
-    <div className="w-full rounded-xl overflow-hidden border border-gray-200 shadow-inner" style={{ height: '300px' }}>
+    <div className="w-full h-[300px] rounded-3xl overflow-hidden border border-gray-100 shadow-inner relative">
       <MapContainer 
-        center={location} 
-        zoom={13} 
-        scrollWheelZoom={false}
-        style={{ height: '100%', width: '100%' }} // Жестко задаем высоту здесь
+        center={centerPos} 
+        zoom={16} 
+        scrollWheelZoom={true}
+        style={{ height: '100%', width: '100%' }}
       >
-        <TileLayer
-          url="https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png"
-          attribution='&copy; OpenStreetMap'
-        />
-        <LocationMarker location={location} onChange={onChange} />
-        <RecenterMap location={location} />
+        {/* Это заставит карту центрироваться при изменении location */}
+        <ChangeView center={centerPos} />
+        
+        <YandexMapLayer />
+        <MapEventsHandler onClick={(latlng) => onChange({ lat: latlng.lat, lng: latlng.lng })} />
+        <Marker position={centerPos} icon={DefaultIcon} />
       </MapContainer>
     </div>
   );

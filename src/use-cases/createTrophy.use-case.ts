@@ -1,9 +1,10 @@
+// src/use-cases/createTrophy.use-case.ts
 import { storageService } from '../services/storage.service';
 import { trophyService } from '../services/trophy.service';
 import type { Trophy } from '../types';
 import { auth } from '../services/firebase';
 
-interface CreateTrophyDTO {
+export interface CreateTrophyDTO {
   number: string;
   region: string;
   numberNotFormat: string;
@@ -26,13 +27,10 @@ export const createTrophyUseCase = async (data: CreateTrophyDTO): Promise<string
     ? data.numberNotFormat 
     : `${data.number}${data.region}`;
 
-  let cleanLocation = undefined;
-  if (data.location && typeof data.location.lat === 'number') {
-    cleanLocation = {
-      lat: data.location.lat,
-      lng: data.location.lng
-    };
-  }
+  // ИСПРАВЛЕНИЕ: строго null вместо undefined, если локации нет
+  const cleanLocation = (data.location && typeof data.location.lat === 'number') 
+    ? { lat: data.location.lat, lng: data.location.lng } 
+    : null;
 
   const newTrophy: Omit<Trophy, 'id'> = {
     plateNumber,
@@ -49,11 +47,15 @@ export const createTrophyUseCase = async (data: CreateTrophyDTO): Promise<string
     region: data.isNotFormat ? 0 : Number(data.region),
     isNotFormat: data.isNotFormat,
     numberNotFormat: data.isNotFormat ? data.numberNotFormat : "",
-    location: cleanLocation,
+    location: cleanLocation, // Теперь сюда попадет либо чистый объект, либо null
     authorName: user.displayName || user.email?.split('@')[0] || 'Охотник без имени',
     authorPhoto: user.photoURL || null,
   };
 
   // 3. Сохранение (Слой БД)
-  return await trophyService.add(newTrophy);
+  // ХАК ДЛЯ FIRESTORE: JSON.parse(JSON.stringify) удаляет ЛЮБЫЕ поля, которые 
+  // случайно оказались undefined (Firebase падает от undefined, но любит null).
+  const finalData = JSON.parse(JSON.stringify(newTrophy));
+
+  return await trophyService.add(finalData);
 };

@@ -25,7 +25,7 @@ export interface Trophy {
   location?: {
     lat: number;
     lng: number;
-  };
+  } | null;
   authorName: string;
   authorPhoto: string | null;
 }
