@@ -85,16 +85,16 @@ const HomePage = () => {
                         <div className="flex items-center gap-2 pl-3">
                           <div className="text-right hidden sm:block">
                             <p className="text-[10px] font-bold text-gray-800 leading-none truncate max-w-[80px]">
-                              {trophy.authorName || 'Охотник'}
+                              {trophy.observations[0].authorName || 'Охотник'}
                             </p>
-                            <p className="text-[8px] text-gray-400 font-mono">#{trophy.userId.slice(-4)}</p>
+                            <p className="text-[8px] text-gray-400 font-mono">#{trophy.observations[0].authorId.slice(-4)}</p>
                           </div>
                           <div className="w-9 h-9 rounded-full overflow-hidden border-2 border-white shadow-sm ring-1 ring-gray-100 flex-shrink-0">
-                            {trophy.authorPhoto ? (
-                              <img src={getAvatar(trophy.authorPhoto, 50)} className="w-full h-full object-cover" alt="" />
+                            {trophy.observations[0].authorPhoto ? (
+                              <img src={getAvatar(trophy.observations[0].authorPhoto, 50)} className="w-full h-full object-cover" alt="" />
                             ) : (
                               <div className="w-full h-full bg-gradient-to-br from-blue-400 to-blue-600 flex items-center justify-center text-white text-xs font-bold">
-                                {trophy.authorName?.[0]?.toUpperCase() || 'О'}
+                                {trophy.observations[0].authorName?.[0]?.toUpperCase() || 'О'}
                               </div>
                             )}
                           </div>

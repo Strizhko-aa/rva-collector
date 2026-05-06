@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { getTrophyDetailsUseCase, type TrophyDetailsDTO } from '../use-cases/getTrophyDetails.use-case';
 import TrophyMapView from '../components/TrophyMapView';
-import { getAvatar, getThumbnail } from '../utils/cloudinary';
+import type { Observation } from '../types'; // Импортируем тип наблюдения
 
 const TrophyDetailsPage = () => {
   const { id } = useParams<{ id: string }>();
@@ -11,141 +11,126 @@ const TrophyDetailsPage = () => {
   
   const [trophy, setTrophy] = useState<TrophyDetailsDTO | null>(null);
   const [loading, setLoading] = useState(true);
-  const [activePhoto, setActivePhoto] = useState(0);
+  
+  // Состояние теперь хранит ВЕСЬ объект наблюдения
+  const [activeObservation, setActiveObservation] = useState<Observation | null>(null);
 
   useEffect(() => {
     const loadTrophy = async () => {
       if (!id) return;
-      const data = await getTrophyDetailsUseCase(id);
-      if (data) {
-        setTrophy(data);
-      } else {
-        navigate('/');
+      try {
+        const data = await getTrophyDetailsUseCase(id);
+        if (data) {
+          setTrophy(data);
+          // Устанавливаем первое наблюдение как активное по умолчанию
+          if (data.observations && data.observations.length > 0) {
+            setActiveObservation(data.observations[0]);
+          }
+        } else {
+          navigate('/');
+        }
+      } catch (error) {
+        console.error("Ошибка при загрузке:", error);
+      } finally {
+        setLoading(false);
       }
-      setLoading(false);
     };
     loadTrophy();
   }, [id, navigate]);
 
-  if (loading) return <div className="text-center p-20 text-gray-400">Считывание данных...</div>;
-  if (!trophy) return null;
+  if (loading) return <div className="text-center p-20 text-gray-400">Считывание истории трофея...</div>;
+  if (!trophy || !activeObservation) return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
-      {/* Кнопка Назад */}
       <button 
         onClick={() => navigate(-1)} 
-        className="text-gray-400 hover:text-blue-600 flex items-center gap-2 transition-colors"
+        className="text-gray-400 hover:text-blue-600 flex items-center gap-2 transition-colors font-bold"
       >
         ← Назад к ленте
       </button>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
         
-        {/* ЛЕВАЯ КОЛОНКА: Профиль автора, Номер и Галерея */}
+        {/* ЛЕВАЯ КОЛОНКА: Номер и История поимок */}
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-50 space-y-6 self-start sticky top-24">
+          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
              
-             {/* БЛОК АВТОРА (Новое) */}
-             <div className="flex items-center gap-4 pb-2">
-                <div className="w-14 h-14 rounded-full overflow-hidden border-4 border-white shadow-md flex-shrink-0 bg-gray-100">
-                  {trophy.authorPhoto ? (
-                    <img src={getAvatar(trophy.authorPhoto, 120)} className="w-full h-full object-cover" alt={trophy.authorName} />
-                  ) : (
-                    <div className="w-full h-full bg-blue-500 flex items-center justify-center text-white text-xl font-bold">
-                      {trophy.authorName?.[0] || 'О'}
-                    </div>
-                  )}
-                </div>
-                <div className="overflow-hidden">
-                  <p className="text-[10px] text-gray-400 uppercase font-black tracking-widest leading-none mb-1">Охотник</p>
-                  <p className="text-lg font-bold text-gray-800 truncate">{trophy.authorName || 'Аноним'}</p>
-                </div>
-             </div>
-
              {/* Номерной знак */}
-             <div className="py-4 border-y border-gray-100 flex justify-center">
+             <div className="py-4 border-b border-gray-100 flex justify-center">
                 {!trophy.isNotFormat ? (
-                  <div className="inline-flex items-center border-4 border-gray-800 rounded-lg px-3 py-1 font-mono bg-white shadow-sm">
+                  <div className="inline-flex items-center border-4 border-gray-800 rounded-lg px-3 py-1 font-mono bg-white">
                     <span className="text-4xl font-black text-gray-800">{trophy.number}</span>
                     <span className="ml-2 pl-2 border-l-2 border-gray-800 text-xl font-bold text-gray-800">{trophy.region}</span>
                   </div>
                 ) : (
-                  <div className="text-2xl font-mono font-black text-blue-600 break-words text-center">
+                  <div className="text-2xl font-mono font-black text-blue-600 text-center uppercase tracking-tighter">
                     {trophy.numberNotFormat}
                   </div>
                 )}
              </div>
 
-             {/* Метаданные */}
-             <div className="space-y-3 text-sm">
-                <div className="flex justify-between">
-                  <span className="text-gray-400">Дата поимки:</span>
-                  <span className="font-medium text-right text-gray-700">{trophy.formattedDate}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-400">ID Охотника:</span>
-                  <span className="font-mono text-[10px] text-blue-500">#{trophy.userId.slice(-12)}</span>
-                </div>
-                {trophy.hasLocation && (
-                  <div className="flex justify-between">
-                    <span className="text-gray-400">Координаты:</span>
-                    <span className="font-mono text-[10px] text-gray-600">
-                      {trophy.location!.lat.toFixed(4)}, {trophy.location!.lng.toFixed(4)}
-                    </span>
-                  </div>
-                )}
-             </div>
-             
-             {/* Миниатюры галереи */}
-             <div className="pt-4 border-t border-gray-100 space-y-3">
-                <p className="text-xs font-bold text-gray-400 uppercase tracking-wider">Фотографии ({trophy.photos.length})</p>
-                <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide">
-                  {trophy.photos.map((p, i) => (
-                    <button 
-                      key={i} 
-                      onClick={() => setActivePhoto(i)} 
-                      className={`w-16 h-16 rounded-xl overflow-hidden border-2 transition-all flex-shrink-0 ${
-                        activePhoto === i ? 'border-blue-500 scale-95 shadow-inner' : 'border-transparent opacity-60 hover:opacity-100'
-                      }`}
-                    >
-                      <img src={getThumbnail(p.url, 100, 100)} className="w-full h-full object-cover" alt={`Снимок ${i + 1}`} />
-                    </button>
-                  ))}
+             {/* Список наблюдений */}
+             <div className="space-y-3">
+                <p className="text-xs font-black text-gray-400 uppercase tracking-widest">История поимок ({trophy.observations.length})</p>
+                <div className="space-y-2 max-h-[50vh] overflow-y-auto pr-2 custom-scrollbar">
+                  {trophy.observations.map((obs, i) => {
+                    const isActive = activeObservation.url === obs.url;
+                    return (
+                      <div 
+                        key={i} 
+                        onClick={() => setActiveObservation(obs)} 
+                        className={`p-3 rounded-2xl cursor-pointer transition-all border-2 ${
+                          activeObservation.url === obs.url ? 'bg-blue-50 border-blue-200' : 'border-transparent'
+                        }`}
+                      >
+                        <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-200">
+                          <img src={obs.url} className="w-full h-full object-cover" alt="" />
+                        </div>
+                        <div className="overflow-hidden">
+                          <p className={`text-sm font-bold truncate ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
+                            {obs.authorName}
+                          </p>
+                          <p className="text-[10px] text-gray-400 font-medium">
+                            {new Date(obs.capturedAt).toLocaleDateString()} {obs.lat ? '📍' : ''}
+                          </p>
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
              </div>
           </div>
         </div>
 
-        {/* ПРАВАЯ КОЛОНКА: Главное Фото и Карта */}
+        {/* ПРАВАЯ КОЛОНКА: Фото и Карта */}
         <div className="md:col-span-2 space-y-6">
           
-          {/* Главное фото */}
-          <div 
-            className="group relative aspect-video rounded-[2rem] overflow-hidden bg-gray-100 shadow-xl flex items-center justify-center cursor-zoom-in border border-gray-100" 
-            onClick={() => window.open(trophy.photos[activePhoto].url, '_blank')}
-          >
+          {/* Главное фото активного наблюдения */}
+          <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-gray-900 shadow-2xl border border-gray-100 group">
             <img 
-              src={getThumbnail(trophy.photos[activePhoto].url, 1200, 800)} 
-              className="max-w-full max-h-full object-contain transition-transform duration-500 group-hover:scale-[1.02]" 
-              alt="Основное фото трофея"
+              src={activeObservation.url} 
+              className="w-full h-full object-contain" 
+              alt="Trophy active observation"
             />
-            <div className="absolute bottom-4 right-4 bg-black/50 backdrop-blur-md text-white text-[10px] px-3 py-1.5 rounded-full opacity-0 group-hover:opacity-100 transition-opacity">
-              Открыть оригинал ↗
+            {/* Overlay с данными конкретного фото */}
+            <div className="absolute bottom-6 left-6 bg-black/40 backdrop-blur-md text-white p-4 rounded-2xl opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+               <p className="text-xs font-black uppercase opacity-60">Зафиксировал</p>
+               <p className="font-bold text-lg">{activeObservation.authorName}</p>
+               <p className="text-xs opacity-80">{new Date(activeObservation.capturedAt).toLocaleString()}</p>
             </div>
           </div>
 
-          {/* Большая, интерактивная Яндекс Карта */}
-          {trophy.hasLocation && trophy.location ? (
-            <div className="bg-white p-2 rounded-[2rem] shadow-lg border border-gray-50 h-[50vh] overflow-hidden">
-              <TrophyMapView location={trophy.location} />
-            </div>
-          ) : (
-            <div className="text-center p-12 bg-gray-50 rounded-[2rem] border-2 border-dashed border-gray-200 text-gray-400">
-                <div className="text-3xl mb-2">📍</div>
-                Координаты для этого трофея не были указаны.
-            </div>
-          )}
+          {/* Карта со всеми точками */}
+          <div className="bg-white p-2 rounded-[2.5rem] shadow-lg border border-gray-100 h-[45vh] overflow-hidden">
+            <TrophyMapView 
+              observations={trophy.observations} 
+              // Если у активного наблюдения есть гео — передаем его для FlyTo
+              focusedLocation={activeObservation.lat && activeObservation.lng 
+                ? { lat: activeObservation.lat, lng: activeObservation.lng } 
+                : null
+              } />
+          </div>
         </div>
       </div>
     </div>

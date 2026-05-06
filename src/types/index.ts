@@ -1,31 +1,22 @@
-export interface TrophyPhoto {
+export interface Observation {
   url: string;
-  storagePath: string; // Понадобится для удаления файла
-  width: number;
-  height: number;
-  metadata?: {
-    lat?: number;
-    lng?: number;
-    takenAt?: number;
-    device?: string;
-  };
+  lat: number | null;
+  lng: number | null;
+  capturedAt: number;
+  authorId: string;
+  authorName: string;
+  authorPhoto: string | null;
 }
 
 export interface Trophy {
   id: string;
-  plateNumber: string;
-  mainImageUrl: string; // Дублируем первое фото для быстрой загрузки ленты
-  photos: TrophyPhoto[]; // Массив всех фото
-  createdAt: number;
-  userId: string;
-  number: number;
-  region: number;
+  plateNumber: string; // Формат: "A111AA77" или "CUSTOM"
+  number: number;      // 111 (для фильтрации)
+  region: number;      // 77 (для фильтрации)
   isNotFormat: boolean;
-  numberNotFormat?: string;
-  location?: {
-    lat: number;
-    lng: number;
-  } | null;
-  authorName: string;
-  authorPhoto: string | null;
+  numberNotFormat: string;
+  mainImageUrl: string; // Фото для обложки (обычно самое первое)
+  observations: Observation[]; // Массив всех фиксаций этого номера
+  createdAt: number;
+  updatedAt: number;
 }

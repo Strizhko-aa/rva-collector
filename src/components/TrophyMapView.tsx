@@ -1,10 +1,10 @@
 import { useEffect } from 'react';
-import { MapContainer, Marker, ScaleControl, useMap } from 'react-leaflet';
+import { MapContainer, Marker, ScaleControl, useMap, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-plugins/layer/tile/Yandex.js';
+import type { Observation } from '../types';
 
-// Исправляем иконки
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
 
@@ -15,9 +15,7 @@ const DefaultIcon = L.icon({
   iconAnchor: [12, 41]
 });
 
-// Patch Yandex layer cleanup to avoid Leaflet/Yandex race conditions.
-// The plugin can delete its container before Leaflet's own remove handler runs,
-// which causes `this._container.remove()` to fail during unmount.
+// --- Твой патч для стабильности Яндекса ---
 const yandexProto = (L.Yandex?.prototype as any);
 if (yandexProto && yandexProto._destroy) {
   const originalDestroy = yandexProto._destroy;
@@ -30,55 +28,80 @@ if (yandexProto && yandexProto._destroy) {
       if (!this._container) {
         this._container = { remove: () => {} };
       }
-      // Preserve container reference so Leaflet's remove callback can safely use it.
     } else {
       originalDestroy.call(this, e);
     }
   };
 }
 
-interface Props {
-  location: { lat: number; lng: number };
-}
-
 /**
- * Внутренний компонент для управления слоями через хук useMap
+ * КОМПОНЕНТ-КОНТРОЛЛЕР: "Полет" к выбранной точке
  */
-const YandexMapLayer = () => {
+const MapFlyTo = ({ target }: { target: { lat: number; lng: number } | null }) => {
   const map = useMap();
 
   useEffect(() => {
-    // 1. Создаем слой
-    const layer = new L.Yandex('map', {
-      maxZoom: 18,
-      attribution: '&copy; Яндекс'
-    });
-
-    layer.addTo(map);
-
-    return () => {
-      if (map.hasLayer(layer)) {
-        map.removeLayer(layer);
-      }
-    };
-  }, [map]);
+    if (target && target.lat && target.lng) {
+      // flyTo делает плавную анимацию перемещения и зума
+      map.flyTo([target.lat, target.lng], 16, {
+        duration: 1.5, // длительность в секундах
+        easeLinearity: 0.25
+      });
+    }
+  }, [target, map]); // Срабатывает каждый раз, когда меняется target
 
   return null;
 };
 
-const TrophyMapView = ({ location }: Props) => {
+const YandexMapLayer = () => {
+  const map = useMap();
+  useEffect(() => {
+    const layer = new L.Yandex('map', { maxZoom: 18, attribution: '&copy; Яндекс' });
+    layer.addTo(map);
+    return () => { if (map.hasLayer(layer)) map.removeLayer(layer); };
+  }, [map]);
+  return null;
+};
+
+interface Props {
+  observations: Observation[];
+  focusedLocation: { lat: number; lng: number } | null; // Новый пропс для слежения
+}
+
+const TrophyMapView = ({ observations, focusedLocation }: Props) => {
+  const pointsWithGeo = observations.filter(o => o.lat !== null && o.lng !== null);
+  
+  // Если вообще нет точек с гео, карту не рисуем (или рисуем дефолт)
+  if (pointsWithGeo.length === 0) return null;
+
   return (
-    <div className="w-full h-full rounded-3xl overflow-hidden border border-gray-100 shadow-inner">
+    <div className="w-full h-full rounded-3xl overflow-hidden border border-gray-100 shadow-inner relative">
       <MapContainer 
-        center={location} 
-        zoom={16} 
+        center={[pointsWithGeo[0].lat!, pointsWithGeo[0].lng!]} 
+        zoom={14} 
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}
       >
-        {/* Активируем слой Яндекса */}
         <YandexMapLayer />
         
-        <Marker position={location} icon={DefaultIcon} />
+        {/* Активируем контроллер полета */}
+        <MapFlyTo target={focusedLocation} />
+        
+        {pointsWithGeo.map((obs, idx) => (
+          <Marker 
+            key={idx} 
+            position={[obs.lat!, obs.lng!]} 
+            icon={DefaultIcon}
+          >
+            <Popup>
+              <div className="text-xs font-bold p-1">
+                <p>{obs.authorName}</p>
+                <p className="text-gray-400 font-normal">{new Date(obs.capturedAt).toLocaleDateString()}</p>
+              </div>
+            </Popup>
+          </Marker>
+        ))}
+        
         <ScaleControl position="bottomleft" imperial={false} />
       </MapContainer>
     </div>
