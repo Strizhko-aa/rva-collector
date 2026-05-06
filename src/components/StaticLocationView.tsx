@@ -18,7 +18,7 @@ interface Props {
 
 const StaticLocationView = ({ location }: Props) => {
   return (
-    <div className="w-full rounded-2xl overflow-hidden border border-gray-100 shadow-sm" style={{ height: '200px' }}>
+    <div className="w-full rounded-2xl overflow-hidden border border-gray-100 dark:border-slate-700 shadow-sm" style={{ height: '200px' }}>
       <MapContainer 
         center={location} 
         zoom={15} 

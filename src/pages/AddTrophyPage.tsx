@@ -5,7 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import exifr from 'exifr';
 import LocationPicker from '../components/LocationPicker'; 
 import { createTrophyUseCase } from '../use-cases/createTrophy.use-case';
-import ProgressButton from '../components/progressButton';
+import ProgressButton from '../components/ProgressButton';
 
 const VORONEZH_COORDS = { lat: 51.6608, lng: 39.2003 };
 
@@ -18,7 +18,7 @@ const PhotoZoomModal = ({ url, onClose }: { url: string; onClose: () => void }) 
       <img src={url} className="max-w-full max-h-[90vh] object-contain rounded-2xl shadow-2xl" alt="Zoom" />
       <button 
         onClick={(e) => { e.stopPropagation(); onClose(); }} 
-        className="absolute top-4 right-4 bg-white/20 text-white p-3 rounded-full hover:bg-white/40 transition-colors"
+        className="absolute top-4 right-4 bg-white/20 dark:bg-white/10 text-white p-3 rounded-full hover:bg-white/40 dark:hover:bg-white/20 transition-colors"
       >
         <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M6 18L18 6M6 6l12 12"/>
@@ -106,8 +106,8 @@ const AddTrophyPage = () => {
   };
 
   return (
-    <div className="max-w-2xl mx-auto space-y-8 pb-10">
-      <h1 className="text-3xl font-black text-gray-800 uppercase italic tracking-tighter">Новый трофей</h1>
+    <div className="max-w-2xl mx-auto space-y-8 pb-10 text-gray-900 dark:text-slate-100">
+      <h1 className="text-3xl font-black text-gray-800 dark:text-slate-100 uppercase italic tracking-tighter">Новый трофей</h1>
       
       <form onSubmit={handleSubmit} className="space-y-10">
 
@@ -116,14 +116,14 @@ const AddTrophyPage = () => {
           <label className="block text-xs font-black text-gray-400 uppercase tracking-widest ml-2">
             Фотографии (кликом можно зазумить)
           </label>
-          <label htmlFor="file-upload" className={`group relative flex flex-col items-center justify-center w-full rounded-3xl border-2 border-dashed transition-all cursor-pointer ${previews.length > 0 ? 'border-gray-200 bg-gray-50 h-32' : 'border-gray-300 bg-white h-48 hover:border-blue-400 hover:bg-blue-50/50'}`}>
+          <label htmlFor="file-upload" className={`group relative flex flex-col items-center justify-center w-full rounded-3xl border-2 border-dashed transition-all cursor-pointer ${previews.length > 0 ? 'border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-950/60 h-32' : 'border-gray-300 dark:border-slate-700 bg-white dark:bg-slate-950/60 h-48 hover:border-blue-400 hover:bg-blue-50/50'}`}>
             <input id="file-upload" type="file" multiple accept="image/*" onChange={handleFileChange} className="sr-only" />
             
             {previews.length === 0 && (
               <div className="flex flex-col items-center text-center px-4">
                 <svg className="w-10 h-10 mb-3 text-gray-400 group-hover:text-blue-500 transition-colors" aria-hidden="true" fill="none" viewBox="0 0 20 16"><path stroke="currentColor" strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5.016 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"/></svg>
-                <p className="text-sm text-gray-700 font-bold">Нажми для выбора</p>
-                <p className="text-xs text-gray-400 mt-1">PNG, JPG (с телефона для метаданных)</p>
+                <p className="text-sm text-gray-700 dark:text-slate-100 font-bold">Нажми для выбора</p>
+                <p className="text-xs text-gray-400 dark:text-slate-400 mt-1">PNG, JPG (с телефона для метаданных)</p>
               </div>
             )}
             
@@ -138,7 +138,7 @@ const AddTrophyPage = () => {
 
         {/* ГАЛЕРЕЯ */}
         {previews.length > 0 && (
-          <div className="grid grid-cols-4 gap-3 p-3 bg-gray-50 rounded-2xl border border-gray-100">
+          <div className="grid grid-cols-4 gap-3 p-3 bg-gray-50 dark:bg-slate-950/60 rounded-2xl border border-gray-100 dark:border-slate-700">
             {previews.map((url, index) => (
               <div key={index} className="relative aspect-square rounded-xl overflow-hidden cursor-zoom-in group/photo" onClick={() => setZoomedPhoto(url)}>
                 <img src={url} className="w-full h-full object-cover transition-transform duration-500 group-hover/photo:scale-110" alt="" />
@@ -151,13 +151,11 @@ const AddTrophyPage = () => {
         )}
         
         {/* 2. БЛОК НОМЕРА */}
-        <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 space-y-5 transition-all duration-300">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-slate-700 space-y-5 transition-all duration-300">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-3">
               <span className="text-3xl">🔢</span>
-              <h2 className="text-xl font-bold text-gray-800">Госзнак</h2>
-            </div>
-            
+                <h2 className="text-xl font-bold text-gray-800 dark:text-slate-100">Госзнак</h2>
             <label className="relative inline-flex items-center cursor-pointer group">
               <input 
                 type="checkbox" 
@@ -165,36 +163,37 @@ const AddTrophyPage = () => {
                 onChange={(e) => setIsNotFormat(e.target.checked)}
                 className="sr-only peer" 
               />
-              <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
-              <span className="ml-3 text-xs font-bold text-gray-500 group-hover:text-gray-700 transition-colors whitespace-nowrap">Неформат</span>
+              <div className="w-11 h-6 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-slate-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <span className="ml-3 text-xs font-bold text-gray-500 dark:text-slate-300 group-hover:text-gray-700 dark:group-hover:text-slate-100 transition-colors whitespace-nowrap">Неформат</span>
             </label>
+            </div>
           </div>
 
           {!isNotFormat ? (
             <div className="grid grid-cols-2 gap-4">
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">№</span>
-                <input placeholder="777" className="w-full pl-10 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none" type="number" value={number} onChange={(e) => setNumber(e.target.value)} required={!isNotFormat} />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 dark:text-slate-400 uppercase">№</span>
+                <input placeholder="777" className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-slate-950 border-none rounded-2xl text-lg font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none" type="number" value={number} onChange={(e) => setNumber(e.target.value)} required={!isNotFormat} />
               </div>
               <div className="relative">
-                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">Reg</span>
-                <input placeholder="77" className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none" type="number" value={region} onChange={(e) => setRegion(e.target.value)} required={!isNotFormat} />
+                <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 dark:text-slate-400 uppercase">Reg</span>
+                <input placeholder="77" className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-950 border-none rounded-2xl text-lg font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none" type="number" value={region} onChange={(e) => setRegion(e.target.value)} required={!isNotFormat} />
               </div>
             </div>
           ) : (
             <div className="relative animate-in slide-in-from-top-2 duration-300">
               <span className="absolute left-4 top-1/2 -translate-y-1/2 text-[10px] font-black text-gray-400 uppercase">A-Z</span>
-              <input placeholder="Введите номер целиком" className="w-full pl-12 pr-4 py-3 bg-gray-50 border-none rounded-2xl text-lg font-bold focus:ring-2 focus:ring-blue-500 outline-none" type="text" value={numberNotFormat} onChange={(e) => setNumberNotFormat(e.target.value)} required={isNotFormat} />
+              <input placeholder="Введите номер целиком" className="w-full pl-12 pr-4 py-3 bg-gray-50 dark:bg-slate-950 border-none rounded-2xl text-lg font-bold text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none" type="text" value={numberNotFormat} onChange={(e) => setNumberNotFormat(e.target.value)} required={isNotFormat} />
             </div>
           )}
         </div>
 
         {/* 3. БЛОК ЛОКАЦИИ */}
-        <div className="bg-white p-8 rounded-3xl shadow-lg border border-gray-100 space-y-6">
+        <div className="bg-white dark:bg-slate-800 p-8 rounded-3xl shadow-lg border border-gray-100 dark:border-slate-700 space-y-6">
           <div className="flex justify-between items-center mb-2">
             <div className="flex items-center gap-3">
               <span className="text-3xl">📍</span>
-              <h3 className="text-xl font-bold text-gray-800">Локация</h3>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-slate-100">Локация</h3>
             </div>
             
             <label className="relative inline-flex items-center cursor-pointer">
@@ -204,7 +203,7 @@ const AddTrophyPage = () => {
                 checked={useLocation}
                 onChange={() => setUseLocation(!useLocation)}
               />
-              <div className="w-14 h-7 bg-gray-200 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+              <div className="w-14 h-7 bg-gray-200 dark:bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[4px] after:left-[4px] after:bg-white after:border-gray-300 dark:after:border-slate-700 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
             </label>
           </div>
 

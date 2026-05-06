@@ -12,26 +12,28 @@ import TrophyDetailsPage from './pages/TrophyDetailsPage';
 
 function App() {
   return (
-    <AuthProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<MainLayout />}>
-            {/* ОТКРЫТЫЕ РОУТЫ */}
-            <Route path="login" element={<LoginPage />} />
-            <Route path="register" element={<RegisterPage />} />
-            <Route path="*" element={<NotFoundPage />} />
+    <div className="min-h-screen bg-white text-gray-900 dark:bg-slate-900 dark:text-gray-100 transition-colors duration-300">
+      <AuthProvider>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<MainLayout />}>
+              {/* ОТКРЫТЫЕ РОУТЫ */}
+              <Route path="login" element={<LoginPage />} />
+              <Route path="register" element={<RegisterPage />} />
+              <Route path="*" element={<NotFoundPage />} />
 
-            {/* ЗАКРЫТЫЕ РОУТЫ (Группировка) */}
-            <Route element={<ProtectedRoute />}>
-              <Route index element={<HomePage />} />
-              <Route path="profile" element={<ProfilePage />} />
-              <Route path="add" element={<AddTrophyPage />} />
-              <Route path="trophy/:id" element={<TrophyDetailsPage />} />
+              {/* ЗАКРЫТЫЕ РОУТЫ (Группировка) */}
+              <Route element={<ProtectedRoute />}>
+                <Route index element={<HomePage />} />
+                <Route path="profile" element={<ProfilePage />} />
+                <Route path="add" element={<AddTrophyPage />} />
+                <Route path="trophy/:id" element={<TrophyDetailsPage />} />
+              </Route>
             </Route>
-          </Route>
-        </Routes>
-      </BrowserRouter>
-    </AuthProvider>
+          </Routes>
+        </BrowserRouter>
+      </AuthProvider>
+    </div>
   );
 }
 

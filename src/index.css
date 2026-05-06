@@ -1,4 +1,20 @@
 @import "tailwindcss";
+
+:root {
+  color-scheme: light;
+}
+html, body {
+  min-height: 100%;
+  background: #f8fafc;
+  color: #0f172a;
+  transition: background-color .3s ease, color .3s ease;
+}
+html.dark {
+  color-scheme: dark;
+  background: #020617;
+  color: #f8fafc;
+}
+
 .leaflet-bottom.leaflet-right {
   display: none;
 }

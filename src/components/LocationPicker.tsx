@@ -55,7 +55,7 @@ const LocationPicker = ({ location, onChange }: LocationPickerProps) => {
   const centerPos: [number, number] = [location.lat, location.lng];
 
   return (
-    <div className="w-full h-[300px] rounded-3xl overflow-hidden border border-gray-100 shadow-inner relative">
+    <div className="w-full h-[300px] rounded-3xl overflow-hidden border border-gray-100 dark:border-slate-700 shadow-inner relative">
       <MapContainer 
         center={centerPos} 
         zoom={16} 

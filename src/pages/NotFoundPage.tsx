@@ -5,10 +5,10 @@ const NotFoundPage = () => {
   const location = useLocation();
 
   return (
-    <div className="flex flex-col items-center justify-center py-20 text-center">
-      <h1 className="text-6xl font-bold text-gray-200 mb-4">404</h1>
-      <p className="text-xl text-gray-600 mb-8">
-        Упс! Страница <code className="bg-gray-100 px-2 py-1 rounded text-red-500 font-mono">"{location.pathname}"</code> не найдена.
+    <div className="min-h-[70vh] flex flex-col items-center justify-center py-20 text-center text-gray-900 dark:text-slate-100">
+      <h1 className="text-6xl font-bold text-gray-900 dark:text-slate-100 mb-4">404</h1>
+      <p className="text-xl text-gray-600 dark:text-slate-400 mb-8">
+        Упс! Страница <code className="bg-gray-100 dark:bg-slate-800 px-2 py-1 rounded text-red-500 font-mono">"{location.pathname}"</code> не найдена.
       </p>
       <Link 
         to="/" 

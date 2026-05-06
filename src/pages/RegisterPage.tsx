@@ -21,7 +21,7 @@ const RegisterPage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto mt-10 p-6 bg-white rounded-lg shadow-md">
+    <div className="max-w-md mx-auto mt-10 p-6 bg-white dark:bg-slate-800 rounded-3xl shadow-xl border border-gray-200 dark:border-slate-700 text-gray-900 dark:text-slate-100 transition-colors duration-300">
       <h2 className="text-2xl font-bold mb-6 text-center">Регистрация</h2>
       <form onSubmit={handleRegister} className="space-y-4">
         <input 
@@ -29,21 +29,21 @@ const RegisterPage = () => {
           placeholder="Email"
           value={email}
           onChange={(e) => setEmail(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-950 rounded-2xl text-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none transition-colors duration-200"
         />
         <input 
           type="password" 
           placeholder="Пароль"
           value={password}
           onChange={(e) => setPassword(e.target.value)}
-          className="w-full p-2 border rounded"
+          className="w-full p-3 border border-gray-200 dark:border-slate-700 bg-gray-50 dark:bg-slate-950 rounded-2xl text-sm text-slate-900 dark:text-slate-100 focus:ring-2 focus:ring-blue-500 outline-none transition-colors duration-200"
         />
         {error && <p className="text-red-500 text-sm">{error}</p>}
         <button className="w-full bg-blue-600 text-white py-2 rounded">Зарегистрироваться</button>
       </form>
       
       <p className="mt-4 text-center text-sm">
-        Уже есть аккаунт? <Link to="/login" className="text-blue-600 underline">Войти</Link>
+        Уже есть аккаунт? <Link to="/login" className="text-blue-600 dark:text-blue-400 underline">Войти</Link>
       </p>
     </div>
   );

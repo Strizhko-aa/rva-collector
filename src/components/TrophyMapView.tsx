@@ -69,7 +69,7 @@ const TrophyMapView = ({ observations, focusedLocation }: Props) => {
   if (coords.length === 0) return null;
 
   return (
-    <div className="w-full h-full rounded-3xl overflow-hidden border border-gray-100 shadow-inner relative">
+    <div className="w-full h-full rounded-3xl overflow-hidden border border-gray-100 dark:border-slate-700 shadow-inner relative">
       <MapContainer 
         center={coords[0]}
         zoom={14} 

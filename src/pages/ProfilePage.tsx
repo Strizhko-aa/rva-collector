@@ -43,9 +43,9 @@ const ProfilePage = () => {
   };
 
   return (
-    <div className="max-w-md mx-auto p-6 text-center">
+    <div className="max-w-md mx-auto p-6 text-center bg-white dark:bg-slate-800 text-gray-900 dark:text-slate-100 rounded-3xl shadow-xl border border-gray-100 dark:border-slate-700 transition-colors duration-300">
       <div className="relative inline-block group">
-        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200">
+        <div className="w-32 h-32 rounded-full overflow-hidden border-4 border-white shadow-lg bg-gray-200 dark:bg-slate-700">
           {user?.photoURL ? (
             <img src={user.photoURL} className="w-full h-full object-cover" alt="Avatar" />
           ) : (

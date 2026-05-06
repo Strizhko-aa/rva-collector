@@ -38,14 +38,14 @@ const TrophyDetailsPage = () => {
     loadTrophy();
   }, [id, navigate]);
 
-  if (loading) return <div className="text-center p-20 text-gray-400">Считывание истории трофея...</div>;
+  if (loading) return <div className="text-center p-20 text-gray-400 dark:text-slate-500">Считывание истории трофея...</div>;
   if (!trophy || !activeObservation) return null;
 
   return (
     <div className="max-w-7xl mx-auto px-4 py-6 space-y-6">
       <button 
         onClick={() => navigate(-1)} 
-        className="text-gray-400 hover:text-blue-600 flex items-center gap-2 transition-colors font-bold"
+        className="text-gray-400 dark:text-slate-400 hover:text-blue-600 dark:hover:text-blue-300 flex items-center gap-2 transition-colors font-bold"
       >
         ← Назад к ленте
       </button>
@@ -54,14 +54,14 @@ const TrophyDetailsPage = () => {
         
         {/* ЛЕВАЯ КОЛОНКА: Номер и История поимок */}
         <div className="space-y-6">
-          <div className="bg-white p-6 rounded-3xl shadow-sm border border-gray-100 space-y-6">
+          <div className="bg-white dark:bg-slate-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-slate-700 space-y-6">
              
              {/* Номерной знак */}
              <div className="py-4 border-b border-gray-100 flex justify-center">
                 {!trophy.isNotFormat ? (
-                  <div className="inline-flex items-center border-4 border-gray-800 rounded-lg px-3 py-1 font-mono bg-white">
-                    <span className="text-4xl font-black text-gray-800">{trophy.number}</span>
-                    <span className="ml-2 pl-2 border-l-2 border-gray-800 text-xl font-bold text-gray-800">{trophy.region}</span>
+                  <div className="inline-flex items-center border-4 border-gray-800 rounded-lg px-3 py-1 font-mono bg-white dark:bg-slate-900">
+                    <span className="text-4xl font-black text-gray-800 dark:text-slate-200">{trophy.number}</span>
+                    <span className="ml-2 pl-2 border-l-2 border-gray-800 dark:border-slate-500 text-xl font-bold text-gray-800 dark:text-slate-200">{trophy.region}</span>
                   </div>
                 ) : (
                   <div className="text-2xl font-mono font-black text-blue-600 text-center uppercase tracking-tighter">
@@ -81,17 +81,17 @@ const TrophyDetailsPage = () => {
                         key={i} 
                         onClick={() => setActiveObservation(obs)} 
                         className={`p-3 rounded-2xl cursor-pointer transition-all border-2 ${
-                          activeObservation.url === obs.url ? 'bg-blue-50 border-blue-200' : 'border-transparent'
+                          activeObservation.url === obs.url ? 'bg-blue-50 dark:bg-slate-900/70 border-blue-200 dark:border-blue-300/40' : 'border-transparent'
                         }`}
                       >
                         <div className="w-12 h-12 rounded-xl overflow-hidden flex-shrink-0 bg-gray-200">
                           <img src={obs.url} className="w-full h-full object-cover" alt="" />
                         </div>
                         <div className="overflow-hidden">
-                          <p className={`text-sm font-bold truncate ${isActive ? 'text-blue-700' : 'text-gray-700'}`}>
+                          <p className={`text-sm font-bold truncate ${isActive ? 'text-blue-700 dark:text-blue-300' : 'text-gray-700 dark:text-slate-200'}`}>
                             {obs.authorName}
                           </p>
-                          <p className="text-[10px] text-gray-400 font-medium">
+                          <p className="text-[10px] text-gray-400 dark:text-slate-500 font-medium">
                             {new Date(obs.capturedAt).toLocaleDateString()} {obs.lat ? '📍' : ''}
                           </p>
                         </div>
@@ -107,7 +107,7 @@ const TrophyDetailsPage = () => {
         <div className="md:col-span-2 space-y-6">
           
           {/* Главное фото активного наблюдения */}
-          <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-gray-900 shadow-2xl border border-gray-100 group">
+          <div className="relative aspect-video rounded-[2.5rem] overflow-hidden bg-gray-900 shadow-2xl border border-gray-100 dark:border-slate-700 group">
             <img 
               src={activeObservation.url} 
               className="w-full h-full object-contain" 
@@ -122,7 +122,7 @@ const TrophyDetailsPage = () => {
           </div>
 
           {/* Карта со всеми точками */}
-          <div className="bg-white p-2 rounded-[2.5rem] shadow-lg border border-gray-100 h-[45vh] overflow-hidden">
+          <div className="bg-white dark:bg-slate-800 p-2 rounded-[2.5rem] shadow-lg border border-gray-100 dark:border-slate-700 h-[45vh] overflow-hidden">
             <TrophyMapView 
               observations={trophy.observations} 
               // Если у активного наблюдения есть гео — передаем его для FlyTo

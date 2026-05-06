@@ -4,7 +4,7 @@ import Header from '../components/Header';
 
 const MainLayout = () => {
   return (
-    <div className="min-h-screen bg-[#F8FAFC]"> {/* Мягкий фоновый цвет */}
+    <div className="min-h-screen bg-[#F8FAFC] dark:bg-slate-950 transition-colors duration-500"> {/* Мягкий фоновый цвет */}
       {/* Наш новый стильный хедер */}
       <Header />
 
@@ -14,7 +14,7 @@ const MainLayout = () => {
       </main>
 
       {/* Можно добавить простой футер */}
-      <footer className="py-10 text-center text-gray-400 text-xs font-mono uppercase tracking-widest">
+      <footer className="py-10 text-center text-gray-400 dark:text-slate-400 text-xs font-mono uppercase tracking-widest">
         &copy; 2026 RVA Hunter Crew • Born to Spot
       </footer>
     </div>
