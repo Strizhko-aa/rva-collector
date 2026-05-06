@@ -1,9 +1,10 @@
-import { useEffect } from 'react';
+import { useRef, useEffect } from 'react';
 import { MapContainer, Marker, ScaleControl, useMap, Popup } from 'react-leaflet';
 import L from 'leaflet';
 import 'leaflet/dist/leaflet.css';
 import 'leaflet-plugins/layer/tile/Yandex.js';
 import type { Observation } from '../types';
+import MapController, { type MapControllerHandle } from './MapController';
 
 import markerIcon from 'leaflet/dist/images/marker-icon.png';
 import markerShadow from 'leaflet/dist/images/marker-shadow.png';
@@ -16,9 +17,11 @@ const DefaultIcon = L.icon({
 });
 
 // --- Твой патч для стабильности Яндекса ---
+// eslint-disable-next-line @typescript-eslint/no-explicit-any
 const yandexProto = (L.Yandex?.prototype as any);
 if (yandexProto && yandexProto._destroy) {
   const originalDestroy = yandexProto._destroy;
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
   yandexProto._destroy = function (e: any) {
     if (!this._map || this._map === e.target) {
       if (this._yandex) {
@@ -33,25 +36,6 @@ if (yandexProto && yandexProto._destroy) {
     }
   };
 }
-
-/**
- * КОМПОНЕНТ-КОНТРОЛЛЕР: "Полет" к выбранной точке
- */
-const MapFlyTo = ({ target }: { target: { lat: number; lng: number } | null }) => {
-  const map = useMap();
-
-  useEffect(() => {
-    if (target && target.lat && target.lng) {
-      // flyTo делает плавную анимацию перемещения и зума
-      map.flyTo([target.lat, target.lng], 16, {
-        duration: 1.5, // длительность в секундах
-        easeLinearity: 0.25
-      });
-    }
-  }, [target, map]); // Срабатывает каждый раз, когда меняется target
-
-  return null;
-};
 
 const YandexMapLayer = () => {
   const map = useMap();
@@ -69,15 +53,25 @@ interface Props {
 }
 
 const TrophyMapView = ({ observations, focusedLocation }: Props) => {
+  const mapRef = useRef<MapControllerHandle>(null);
+
   const pointsWithGeo = observations.filter(o => o.lat !== null && o.lng !== null);
+  const coords = pointsWithGeo.map(o => [o.lat!, o.lng!] as [number, number]);
+
+  // Следим за focusedLocation и вызываем метод контроллера
+  useEffect(() => {
+    if (focusedLocation && mapRef.current) {
+      mapRef.current.flyToLocation(focusedLocation.lat, focusedLocation.lng);
+    }
+  }, [focusedLocation]);
   
   // Если вообще нет точек с гео, карту не рисуем (или рисуем дефолт)
-  if (pointsWithGeo.length === 0) return null;
+  if (coords.length === 0) return null;
 
   return (
     <div className="w-full h-full rounded-3xl overflow-hidden border border-gray-100 shadow-inner relative">
       <MapContainer 
-        center={[pointsWithGeo[0].lat!, pointsWithGeo[0].lng!]} 
+        center={coords[0]}
         zoom={14} 
         scrollWheelZoom={true}
         style={{ height: '100%', width: '100%' }}
@@ -85,7 +79,7 @@ const TrophyMapView = ({ observations, focusedLocation }: Props) => {
         <YandexMapLayer />
         
         {/* Активируем контроллер полета */}
-        <MapFlyTo target={focusedLocation} />
+        <MapController ref={mapRef} points={coords} />
         
         {pointsWithGeo.map((obs, idx) => (
           <Marker 
