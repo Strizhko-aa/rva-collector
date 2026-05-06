@@ -5,6 +5,7 @@ import { useNavigate } from 'react-router-dom';
 import exifr from 'exifr';
 import LocationPicker from '../components/LocationPicker'; 
 import { createTrophyUseCase } from '../use-cases/createTrophy.use-case';
+import ProgressButton from '../components/progressButton';
 
 const VORONEZH_COORDS = { lat: 51.6608, lng: 39.2003 };
 
@@ -44,6 +45,8 @@ const AddTrophyPage = () => {
   const [region, setRegion] = useState('');
   const [numberNotFormat, setNumberNotFormat] = useState('');
 
+  const [progress, setProgress] = useState(0);
+
   useEffect(() => {
     return () => previews.forEach(url => URL.revokeObjectURL(url));
   }, [previews]);
@@ -82,12 +85,15 @@ const AddTrophyPage = () => {
     if (!user || imageFiles.length === 0) return alert('Добавьте фото!');
     
     setLoading(true);
+    setProgress(0); // Сброс перед началом
+
     try {
       await createTrophyUseCase({
         number, region, numberNotFormat, isNotFormat,
         imageFiles, userId: user.uid,
         location: useLocation ? location : null,
-        capturedAt // Теперь передается честная дата из стейта
+        capturedAt, // Теперь передается честная дата из стейта,
+        onProgress: (p) => setProgress(p) // Ловим прогресс здесь
       });
       navigate('/');
     } catch (err) { 
@@ -95,6 +101,7 @@ const AddTrophyPage = () => {
       console.error(err); 
     } finally { 
       setLoading(false); 
+      setProgress(0);
     }
   };
 
@@ -206,9 +213,12 @@ const AddTrophyPage = () => {
           )}
         </div>
 
-        <button type="submit" disabled={loading} className={`w-full py-5 rounded-2xl text-lg font-black uppercase shadow-lg active:scale-95 transition-all ${loading ? 'bg-gray-300 text-gray-500 shadow-none' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200'}`}>
+        {/* <button type="submit" disabled={loading} className={`w-full py-5 rounded-2xl text-lg font-black uppercase shadow-lg active:scale-95 transition-all ${loading ? 'bg-gray-300 text-gray-500 shadow-none' : 'bg-blue-600 text-white hover:bg-blue-700 shadow-blue-200'}`}>
           {loading ? 'Загрузка...' : 'Отправить'}
-        </button>
+        </button> */}
+        <ProgressButton isLoading={loading} progress={progress}>
+          {loading ? 'Загрузка...' : 'Отправить'}
+        </ProgressButton>
       </form>
 
       {zoomedPhoto && (

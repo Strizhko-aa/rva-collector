@@ -14,6 +14,7 @@ export interface CreateTrophyDTO {
   userId: string;
   location: { lat: number; lng: number } | null;
   capturedAt: number | null;
+  onProgress?: (percent: number) => void; // Новый коллбэк
 }
 
 export const createTrophyUseCase = async (data: CreateTrophyDTO): Promise<string> => {
@@ -22,7 +23,17 @@ export const createTrophyUseCase = async (data: CreateTrophyDTO): Promise<string
   if (!user) throw new Error("Не авторизован");
 
   // 1. Загружаем все переданные файлы
-  const urls = await storageService.uploadMultiple(data.imageFiles);
+  // 1. Загрузка фото (0% -> 90%)
+  // Передаем коллбэк в сервис. Если сервис не поддерживает пофайловый прогресс, 
+  // имитируем его для красоты или считаем по количеству файлов.
+  const urls = await storageService.uploadMultiple(
+    data.imageFiles,
+    (p) => {
+      if (data.onProgress) data.onProgress(Math.round(p * 0.9)); 
+    }
+  );
+
+  if (data.onProgress) data.onProgress(90);
 
   const plateNumber = data.isNotFormat 
     ? data.numberNotFormat 
@@ -47,8 +58,10 @@ export const createTrophyUseCase = async (data: CreateTrophyDTO): Promise<string
     const trophyRef = doc(db, 'trophies', existingTrophy.id);
     await updateDoc(trophyRef, {
       observations: arrayUnion(...newObservations),
-      updatedAt: Date.now()
+      updatedAt: Date.now(),
+      mainImageUrl: newObservations[0].url // Обновляем обложку на самое свежее фото
     });
+    if (data.onProgress) data.onProgress(100);
     return existingTrophy.id;
   } else {
     // СОЗДАЕМ: Новый номер в коллекции
@@ -63,6 +76,7 @@ export const createTrophyUseCase = async (data: CreateTrophyDTO): Promise<string
       createdAt: data.capturedAt || Date.now(),
       updatedAt: Date.now(),
     };
+    if (data.onProgress) data.onProgress(100);
     return await trophyService.add(newTrophy);
   }
 
